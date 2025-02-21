@@ -62,5 +62,9 @@ new Vue({
         deleteTask(index) {
             this.tasks.splice(index, 1); // Удаляем задачу из первого столбца
         },
+        moveToInProgress(index) {
+            const task = this.tasks.splice(index, 1)[0]; // Удаляем задачу из первого столбца
+            this.inProgressTasks.push(task); // Добавляем задачу во второй столбец
+        }
     }
 });
