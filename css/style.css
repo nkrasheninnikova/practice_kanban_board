@@ -35,3 +35,10 @@ button {
 button:hover {
     background-color: #6a1b9a;
 }
+form input, form textarea {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
