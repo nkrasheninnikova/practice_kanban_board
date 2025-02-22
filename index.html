@@ -66,6 +66,12 @@
     </div>
     <div class="column">
         <h2>Выполненные задачи</h2>
+        <div class="task" v-for="(task, index) in completedTasks" :key="index">
+            <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
+            <p><strong>Заголовок:</strong> {{ task.title }}</p>
+            <p><strong>Описание:</strong> {{ task.description }}</p>
+            <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
+        </div>
     </div>
 </div>
 </body>
