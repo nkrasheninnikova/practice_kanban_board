@@ -76,6 +76,17 @@ new Vue({
         },
         moveToCompleted(index) {
             const task = this.testingTasks.splice(index, 1)[0]; // Удаляем задачу из "Тестирование"
+
+            // Проверяем дедлайн
+            const deadlineDate = new Date(task.deadline);
+            const currentDate = new Date();
+
+            if (currentDate > deadlineDate) {
+                task.status = 'просрочена'; // Если текущая дата больше дедлайна
+            } else {
+                task.status = 'выполнена в срок'; // Если задача выполнена в срок
+            }
+
             this.completedTasks.push(task); // Добавляем задачу в "Выполненные задачи"
         },
         openReturnForm(index) {
@@ -97,7 +108,6 @@ new Vue({
             const task = this.testingTasks.splice(this.returnTaskIndex, 1)[0]; // Удаляем задачу из "Тестирование"
             task.returnReason = this.returnReason; // Добавляем причину возврата к задаче
             this.inProgressTasks.push(task); // Добавляем задачу в "Задачи в работе"
-
             this.closeReturnForm(); // Закрываем форму
         }
     }
