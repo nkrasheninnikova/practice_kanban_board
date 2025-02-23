@@ -64,6 +64,7 @@
             </form>
             <template v-else>
                 <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
+                <p v-if="task.returnReason"><strong>Причина возврата:</strong> {{ task.returnReason }}</p> <!-- Отображаем причину возврата -->
                 <p><strong>Последнее редактирование:</strong> {{ task.lastEditedAt || 'Не редактировалось' }}</p>
                 <p><strong>Заголовок:</strong> {{ task.title }}</p>
                 <p><strong>Описание:</strong> {{ task.description }}</p>
@@ -72,8 +73,8 @@
                 <button @click="deleteTask(index)">Удалить</button>
                 <button @click="moveToTesting(index)">Тестирование</button>
             </template>
-            </div>
         </div>
+    </div>
     <div class="column">
         <h2>Тестирование</h2>
         <div class="task" v-for="(task, index) in testingTasks" :key="index">

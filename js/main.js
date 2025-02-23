@@ -35,14 +35,15 @@ new Vue({
             this.closeForm();
         },
         deleteTask(index) {
-            this.tasks = [...this.tasks.slice(0, index), ...this.tasks.slice(index + 1)];
+            // Удаляем задачу из массива tasks
+            this.tasks.splice(index, 1);
         },
         moveToInProgress(index) {
             const task = this.tasks[index];
             if (task) {
                 task.status = 'В работе';
-                this.inProgressTasks = [...this.inProgressTasks, task];
-                this.tasks = [...this.tasks.slice(0, index), ...this.tasks.slice(index + 1)];
+                this.inProgressTasks.push(task); // Добавляем задачу в inProgressTasks
+                this.tasks.splice(index, 1); // Удаляем задачу из tasks
             }
         },
         startEdit(index) {
@@ -50,7 +51,7 @@ new Vue({
         },
         saveEdit(index) {
             if (this.editIndex !== null) {
-                const task = this.tasks[this.editIndex];
+                const task = this.tasks[this.editIndex] || this.inProgressTasks[this.editIndex];
                 if (task) {
                     task.lastEditedAt = new Date().toLocaleString(); // Добавляем временную метку редактирования
                 }
@@ -71,14 +72,11 @@ new Vue({
         returnTaskToInProgress() {
             const task = this.testingTasks[this.returnIndex];
             if (task) {
-                task.returnReason = this.returnReason;
+                task.returnReason = this.returnReason; // Сохраняем причину возврата
                 task.status = 'Возвращено в работу';
                 task.lastEditedAt = new Date().toLocaleString(); // Добавляем временную метку при возврате
-                this.inProgressTasks = [...this.inProgressTasks, task];
-                this.testingTasks = [
-                    ...this.testingTasks.slice(0, this.returnIndex),
-                    ...this.testingTasks.slice(this.returnIndex + 1)
-                ];
+                this.inProgressTasks.push(task); // Добавляем задачу обратно в "Задачи в работе"
+                this.testingTasks.splice(this.returnIndex, 1); // Удаляем задачу из "Тестирования"
             }
             this.closeReturnForm();
         },
@@ -86,23 +84,25 @@ new Vue({
             const task = this.inProgressTasks[index];
             if (task) {
                 task.status = 'Тестирование';
-                this.testingTasks = [...this.testingTasks, task];
-                this.inProgressTasks = [
-                    ...this.inProgressTasks.slice(0, index),
-                    ...this.inProgressTasks.slice(index + 1)
-                ];
+                this.testingTasks.push(task); // Добавляем задачу в testingTasks
+                this.inProgressTasks.splice(index, 1); // Удаляем задачу из inProgressTasks
             }
         },
         moveToCompleted(index) {
             const task = this.testingTasks[index];
             if (task) {
-                task.status = 'Выполнено';
+                const deadlineDate = new Date(task.deadline);
+                const currentDate = new Date();
+
+                if (currentDate > deadlineDate) {
+                    task.status = 'Просрочено';
+                } else {
+                    task.status = 'Выполнено';
+                }
+
                 task.lastEditedAt = new Date().toLocaleString(); // Добавляем временную метку при завершении
-                this.completedTasks = [...this.completedTasks, task];
-                this.testingTasks = [
-                    ...this.testingTasks.slice(0, index),
-                    ...this.testingTasks.slice(index + 1)
-                ];
+                this.completedTasks.push(task); // Добавляем задачу в completedTasks
+                this.testingTasks.splice(index, 1); // Удаляем задачу из testingTasks
             }
         }
     }
