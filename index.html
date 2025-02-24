@@ -9,7 +9,8 @@
 </head>
 <body>
 <div id="app">
-    <div class="column">
+    <!-- Столбец "Задачи" -->
+    <div class="column" @drop="onDrop($event, 'tasks')" @dragover.prevent>
         <h2>Задачи</h2>
         <button @click="openForm()">Добавить карточку</button>
         <form v-if="showForm" @submit.prevent="addTask">
@@ -22,11 +23,8 @@
             <button type="submit">Создать задачу</button>
             <button type="button" @click="closeForm()">Отмена</button>
         </form>
-    </div>
-    <div class="column">
-        <h2>Запланированные задачи</h2>
-        <div class="task" v-for="(task, index) in tasks" :key="index">
-            <form v-if="editIndex === index" @submit.prevent="saveEdit(index)">
+        <div class="task" v-for="(task, index) in tasks" :key="index" draggable="true" @dragstart="startDrag($event, task)">
+            <form v-if="editIndex === index && currentArray === tasks" @submit.prevent="saveEdit">
                 <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
                 <label for="title">Заголовок:</label>
                 <input type="text" v-model="task.title" required>
@@ -39,21 +37,48 @@
             </form>
             <template v-else>
                 <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
-                <!-- Проверяем, есть ли lastEditedAt -->
                 <p v-if="task.lastEditedAt"><strong>Последнее редактирование:</strong> {{ task.lastEditedAt }}</p>
                 <p><strong>Заголовок:</strong> {{ task.title }}</p>
                 <p><strong>Описание:</strong> {{ task.description }}</p>
                 <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
-                <button @click="startEdit(index)">Редактировать</button>
-                <button @click="deleteTask(index)">Удалить</button>
-                <button @click="moveToInProgress(index)">В работу</button>
+                <button @click="startEdit(index, tasks)">Редактировать</button>
+                <button @click="deleteTask(index, tasks)">Удалить</button>
             </template>
         </div>
     </div>
-    <div class="column">
+
+    <!-- Столбец "Запланированные задачи" -->
+    <div class="column" @drop="onDrop($event, 'plannedTasks')" @dragover.prevent>
+        <h2>Запланированные задачи</h2>
+        <div class="task" v-for="(task, index) in plannedTasks" :key="index" draggable="true" @dragstart="startDrag($event, task)">
+            <form v-if="editIndex === index && currentArray === plannedTasks" @submit.prevent="saveEdit">
+                <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
+                <label for="title">Заголовок:</label>
+                <input type="text" v-model="task.title" required>
+                <label for="description">Описание:</label>
+                <textarea v-model="task.description" required></textarea>
+                <label for="deadline">Дедлайн:</label>
+                <input type="date" v-model="task.deadline" required>
+                <button type="submit">Сохранить</button>
+                <button type="button" @click="cancelEdit()">Отмена</button>
+            </form>
+            <template v-else>
+                <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
+                <p v-if="task.lastEditedAt"><strong>Последнее редактирование:</strong> {{ task.lastEditedAt }}</p>
+                <p><strong>Заголовок:</strong> {{ task.title }}</p>
+                <p><strong>Описание:</strong> {{ task.description }}</p>
+                <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
+                <button @click="startEdit(index, plannedTasks)">Редактировать</button>
+                <button @click="deleteTask(index, plannedTasks)">Удалить</button>
+            </template>
+        </div>
+    </div>
+
+    <!-- Столбец "Задачи в работе" -->
+    <div class="column" @drop="onDrop($event, 'inProgressTasks')" @dragover.prevent>
         <h2>Задачи в работе</h2>
-        <div class="task" v-for="(task, index) in inProgressTasks" :key="index">
-            <form v-if="editIndex === index" @submit.prevent="saveEdit(index)">
+        <div class="task" v-for="(task, index) in inProgressTasks" :key="index" draggable="true" @dragstart="startDrag($event, task)">
+            <form v-if="editIndex === index && currentArray === inProgressTasks" @submit.prevent="saveEdit">
                 <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
                 <label for="title">Заголовок:</label>
                 <input type="text" v-model="task.title" required>
@@ -71,21 +96,21 @@
                 <p><strong>Заголовок:</strong> {{ task.title }}</p>
                 <p><strong>Описание:</strong> {{ task.description }}</p>
                 <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
-                <button @click="startEdit(index)">Редактировать</button>
-                <button @click="deleteTask(index)">Удалить</button>
-                <button @click="moveToTesting(index)">Тестирование</button>
+                <button @click="startEdit(index, inProgressTasks)">Редактировать</button>
+                <button @click="deleteTask(index, inProgressTasks)">Удалить</button>
             </template>
         </div>
     </div>
-    <div class="column">
+
+    <!-- Столбец "Тестирование" -->
+    <div class="column" @drop="onDrop($event, 'testingTasks')" @dragover.prevent>
         <h2>Тестирование</h2>
-        <div class="task" v-for="(task, index) in testingTasks" :key="index">
+        <div class="task" v-for="(task, index) in testingTasks" :key="index" draggable="true" @dragstart="startDrag($event, task)">
             <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
             <p><strong>Заголовок:</strong> {{ task.title }}</p>
             <p><strong>Описание:</strong> {{ task.description }}</p>
             <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
-            <button @click="moveToCompleted(index)">Выполнить</button> <!-- Кнопка "Выполнить" -->
-            <button @click="openReturnForm(index)">Вернуть в работу</button> <!-- Кнопка "Вернуть в работу" -->
+            <button @click="openReturnForm(index)">Вернуть в работу</button>
         </div>
         <!-- Форма для указания причины возврата -->
         <form v-if="showReturnForm" @submit.prevent="returnTaskToInProgress">
@@ -95,14 +120,16 @@
             <button type="button" @click="closeReturnForm()">Отмена</button>
         </form>
     </div>
-    <div class="column">
+
+    <!-- Столбец "Выполненные задачи" -->
+    <div class="column" @drop="onDrop($event, 'completedTasks')" @dragover.prevent>
         <h2>Выполненные задачи</h2>
         <div class="task" v-for="(task, index) in completedTasks" :key="index">
             <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
             <p><strong>Заголовок:</strong> {{ task.title }}</p>
             <p><strong>Описание:</strong> {{ task.description }}</p>
             <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
-            <p><strong>Статус:</strong> {{ task.status }}</p> <!-- Отображаем статус -->
+            <p><strong>Статус:</strong> {{ task.status }}</p>
         </div>
     </div>
 </div>
