@@ -39,6 +39,8 @@
             </form>
             <template v-else>
                 <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
+                <!-- Проверяем, есть ли lastEditedAt -->
+                <p v-if="task.lastEditedAt"><strong>Последнее редактирование:</strong> {{ task.lastEditedAt }}</p>
                 <p><strong>Заголовок:</strong> {{ task.title }}</p>
                 <p><strong>Описание:</strong> {{ task.description }}</p>
                 <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>
@@ -64,8 +66,8 @@
             </form>
             <template v-else>
                 <p><strong>Дата создания:</strong> {{ task.createdAt }}</p>
+                <p v-if="task.lastEditedAt"><strong>Последнее редактирование:</strong> {{ task.lastEditedAt }}</p>
                 <p v-if="task.returnReason"><strong>Причина возврата:</strong> {{ task.returnReason }}</p> <!-- Отображаем причину возврата -->
-                <p><strong>Последнее редактирование:</strong> {{ task.lastEditedAt || 'Не редактировалось' }}</p>
                 <p><strong>Заголовок:</strong> {{ task.title }}</p>
                 <p><strong>Описание:</strong> {{ task.description }}</p>
                 <p><strong>Дедлайн:</strong> {{ task.deadline }}</p>

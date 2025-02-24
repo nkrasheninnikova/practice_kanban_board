@@ -29,6 +29,7 @@ new Vue({
                 description: this.newTask.description,
                 deadline: this.newTask.deadline,
                 createdAt: new Date().toLocaleString(),
+                lastEditedAt: null, // Добавляем поле lastEditedAt и инициализируем его как null
                 status: 'Запланировано'
             };
             this.tasks.push(newTask);
@@ -51,7 +52,14 @@ new Vue({
         },
         saveEdit(index) {
             if (this.editIndex !== null) {
-                const task = this.tasks[this.editIndex] || this.inProgressTasks[this.editIndex];
+                // Определяем, в каком массиве находится задача
+                let taskArray = this.tasks;
+                if (this.inProgressTasks[this.editIndex]) {
+                    taskArray = this.inProgressTasks;
+                } else if (this.testingTasks[this.editIndex]) {
+                    taskArray = this.testingTasks;
+                }
+                const task = taskArray[this.editIndex];
                 if (task) {
                     task.lastEditedAt = new Date().toLocaleString(); // Добавляем временную метку редактирования
                 }
@@ -93,13 +101,11 @@ new Vue({
             if (task) {
                 const deadlineDate = new Date(task.deadline);
                 const currentDate = new Date();
-
                 if (currentDate > deadlineDate) {
                     task.status = 'Просрочено';
                 } else {
                     task.status = 'Выполнено';
                 }
-
                 task.lastEditedAt = new Date().toLocaleString(); // Добавляем временную метку при завершении
                 this.completedTasks.push(task); // Добавляем задачу в completedTasks
                 this.testingTasks.splice(index, 1); // Удаляем задачу из testingTasks
